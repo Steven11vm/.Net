@@ -1,133 +1,168 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 
-Credito credito = new Credito();
+class Cuenta 
+{  
+    public string NumeroCuenta { get; set; }  
+    public double Saldo { get; set; }
 
-bool salir = false;
-
-while (!salir)
-{
-    Console.WriteLine("Bienvenido");
-    Console.WriteLine("1. Registrar el valor total de compras");
-    Console.WriteLine("2. Realizar un abono");
-    Console.WriteLine("3. Pagar credito");
-    Console.WriteLine("4. Consultar Cupo Crédito y saldo");
-    Console.WriteLine("5. Consultar total de puntos");
-    Console.WriteLine("6. Salir");
-
-    Console.Write("Seleccione una de las opciones: ");
-    int opcion = int.Parse(Console.ReadLine());
-
-    switch (opcion)
+    public Cuenta(string numeroCuenta, double saldo)
     {
-        case 1:
-            Console.Write("Ingrese el valor total de la compra: ");
-            double valorCompra = double.Parse(Console.ReadLine());
-            credito.RegistrarCompra(valorCompra);
-            break;
-        case 2:
-            Console.Write("Ingrese el valor del avance: ");
-            double valorAvance = double.Parse(Console.ReadLine());
-            credito.RealizarAvance(valorAvance);
-            break;
-        case 3:
-            Console.Write("Ingrese el valor a abonar: ");
-            double valorAbono = double.Parse(Console.ReadLine());
-            credito.PagarCredito(valorAbono);
-            break;
-        case 4:
-            Console.WriteLine("Cupo de credito: " + credito.CupoCredito);
-            Console.WriteLine("Saldo por pagar: " + credito.SaldoPorPagar);
-            break;
-        case 5:
-            Console.WriteLine("Total de puntos: " + credito.CalcularTotalPuntos());
-            break;
-        case 6:
-            salir = true;
-            break;
-        default:
-            Console.WriteLine("Opcion invalida. Por favor seleccione una opción válida entre el 1 y el 6    .");
-            break;
+        NumeroCuenta = numeroCuenta;
+        Saldo = saldo;
     }
 }
 
-class Credito
+class Program
 {
-    private const double CupoCredito = 1000000;
-    private double _saldoPorPagar = 0;
-    private int _totalPuntos = 0;
+    static List<Cuenta> cuentas = new List<Cuenta>();
 
-    public double SaldoPorPagar { get { return _saldoPorPagar; } }
-
-    public void RegistrarCompra(double valorCompra)
+    static void Main(string[] args)
     {
-        if (valorCompra <= 0)
+        while (true)
         {
-            Console.WriteLine("El valor de la compra debe ser mayor a cero .");
-            return;
-        }
+            MostrarMenu();
+            int opcion = LeerOpcion();
 
-        if (_saldoPorPagar == CupoCredito)
-        {
-            Console.WriteLine("No se pueden realizar compras si el cupo del crédito es igual al saldo por pagar.");
-            return;
-        }
-
-        if (valorCompra > (CupoCredito - _saldoPorPagar))
-        {
-            Console.WriteLine("El valor de la compra excede el cupo de crédito disponible.");
-            return;
-        }
-
-        _saldoPorPagar += valorCompra;
-        if (valorCompra >= 100000)
-        {
-            _totalPuntos += (int)(valorCompra * 0.01);
+            switch (opcion)
+            {
+                case 1:
+                    RegistrarCuenta();
+                    break;
+                case 2:
+                    ConsignarDinero();
+                    break;
+                case 3:
+                    TransferirDinero();
+                    break;
+                case 4:
+                    RetirarDinero();
+                    break;
+                case 5:
+                    Environment.Exit(0);
+                    break;
+                default:
+                    Console.WriteLine("Opción no válida. Por favor, seleccione una opción correcta.");
+                    break;
+            }
         }
     }
 
-    public void RealizarAvance(double valorAvance)
+    static void MostrarMenu()
     {
-        if (valorAvance <= 0)
-        {
-            Console.WriteLine("El valor del avance debe ser mayor que cero.");
-            return;
-        }
-
-        if (_saldoPorPagar == CupoCredito)
-        {
-            Console.WriteLine("No se pueden realizar avances si el cupo del crédito es igual al saldo por pagar.");
-            return;
-        }
-
-        if (valorAvance > (CupoCredito - _saldoPorPagar))
-        {
-            Console.WriteLine("El valor del avance excede el cupo de crédito disponible.");
-            return;
-        }
-
-        _saldoPorPagar += valorAvance;
+        Console.WriteLine("MENU:");
+        Console.WriteLine("1. Registrar cuenta.");
+        Console.WriteLine("2. Consignar dinero.");
+        Console.WriteLine("3. Transferir dinero.");
+        Console.WriteLine("4. Retirar dinero.");
+        Console.WriteLine("5. Salir");
+        Console.Write("Seleccione una opción: ");
     }
 
-    public void PagarCredito(double valorAbono)
+    static int LeerOpcion()
     {
-        if (valorAbono <= 0)
+        int opcion;
+        while (!int.TryParse(Console.ReadLine(), out opcion))
         {
-            Console.WriteLine("El valor del abono debe ser mayor que cero.");
-            return;
+            Console.WriteLine("Opción inválida. Por favor, seleccione una opción numérica.");
+            Console.Write("Seleccione una opción: ");
         }
-
-        if (valorAbono > _saldoPorPagar)
-        {
-            Console.WriteLine("El valor del abono excede el saldo por pagar.");
-            return;
-        }
-
-        _saldoPorPagar -= valorAbono;
+        return opcion;
     }
 
-    public int CalcularTotalPuntos()
+    static void RegistrarCuenta()
     {
-        return _totalPuntos;
+        Console.Write("Ingrese el número de cuenta: ");
+        string numeroCuenta = Console.ReadLine();
+
+        if (cuentas.Exists(cuenta => cuenta.NumeroCuenta == numeroCuenta))
+        {
+            Console.WriteLine("Esta cuenta ya está registrada.");
+            return;
+        }
+
+        cuentas.Add(new Cuenta(numeroCuenta, 0));
+        Console.WriteLine("Cuenta registrada exitosamente.");
+    }
+
+    static void ConsignarDinero()
+    {
+        Console.Write("Ingrese el número de cuenta: ");
+        string numeroCuenta = Console.ReadLine();
+
+        Cuenta cuenta = cuentas.Find(cuenta => cuenta.NumeroCuenta == numeroCuenta);
+
+        if (cuenta == null)
+        {
+            Console.WriteLine("La cuenta no existe.");
+            return;
+        }
+
+        Console.Write("Ingrese el monto a consignar: ");
+        double monto = double.Parse(Console.ReadLine());
+
+        cuenta.Saldo += monto;
+        Console.WriteLine($"Consignación exitosa. Nuevo saldo: {cuenta.Saldo}");
+    }
+
+    static void TransferirDinero()
+    {
+        Console.Write("Ingrese el número de cuenta de origen: ");
+        string origen = Console.ReadLine();
+        Cuenta cuentaOrigen = cuentas.Find(cuenta => cuenta.NumeroCuenta == origen);
+
+        if (cuentaOrigen == null)
+        {
+            Console.WriteLine("La cuenta de origen no existe.");
+            return;
+        }
+
+        Console.Write("Ingrese el número de cuenta de destino: ");
+        string destino = Console.ReadLine();
+        Cuenta cuentaDestino = cuentas.Find(cuenta => cuenta.NumeroCuenta == destino);
+
+        if (cuentaDestino == null)
+        {
+            Console.WriteLine("La cuenta de destino no existe.");
+            return;
+        }
+
+        Console.Write("Ingrese el monto a transferir: ");
+        double monto = double.Parse(Console.ReadLine());
+
+        if (monto <= 0 || monto > cuentaOrigen.Saldo)
+        {
+            Console.WriteLine("Monto inválido para transferir.");
+            return;
+        }
+
+        cuentaOrigen.Saldo -= monto;
+        cuentaDestino.Saldo += monto;
+        Console.WriteLine("Transferencia exitosa.");
+    }
+
+    static void RetirarDinero()
+    {
+        Console.Write("Ingrese el número de cuenta: ");
+        string numeroCuenta = Console.ReadLine();
+        Cuenta cuenta = cuentas.Find(cuenta => cuenta.NumeroCuenta == numeroCuenta);
+
+        if (cuenta == null)
+        {
+            Console.WriteLine("La cuenta no existe.");
+            return;
+        }
+
+        Console.Write("Ingrese el monto a retirar: ");
+        double monto = double.Parse(Console.ReadLine());
+
+        if (monto <= 0 || monto > cuenta.Saldo)
+        {
+            Console.WriteLine("Monto inválido para retirar.");
+            return;
+        }
+
+        cuenta.Saldo -= monto;
+        Console.WriteLine($"Retiro exitoso. Nuevo saldo: {cuenta.Saldo}");
     }
 }
-
